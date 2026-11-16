@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Game Asah Otak</title>
+<style>
+body{margin:0;background:#1e1b4b;color:#fff;font-family:sans-serif;text-align:center;padding:14px;max-width:520px;margin:0 auto}
+.view{display:none}
+.view.on{display:block}
+.back{color:#f59e0b;cursor:pointer;display:block;text-align:left;margin-bottom:4px}
+h1{margin:8px 0;font-size:22px}
+button{padding:10px 20px;border:0;border-radius:8px;background:#f59e0b;color:#000;font-weight:bold;margin:4px}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:420px;margin:16px auto}
+.card{display:block;background:#312e81;border-radius:14px;padding:10px;color:#fff;border:2px solid #4338ca;cursor:pointer}
+.card:active{background:#4338ca}
+.card b{font-size:15px}
+.thumb{width:100%;aspect-ratio:1;overflow:hidden;border-radius:10px;margin-bottom:8px;background:#000}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+#info,#pinfo{display:flex;justify-content:center;gap:20px;margin-bottom:10px}
+#bboard{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;width:min(92vw,380px);margin:0 auto;background:#312e81;padding:6px;border-radius:10px;box-sizing:border-box}
+.c{aspect-ratio:1;background:#4338ca;border-radius:4px}
+.c.f{background:#f59e0b}
+#bpieces{display:flex;justify-content:center;gap:14px;margin:16px 0}
+.pc{padding:8px;border:2px solid transparent;border-radius:10px;min-width:70px;min-height:70px;display:flex;align-items:center;justify-content:center}
+.pc.sel{border-color:#fff;background:#312e81}
+.pg{display:grid;gap:2px}
+.pg div{width:16px;height:16px;border-radius:3px}
+.pg .on{background:#f59e0b}
+#bmsg,#zmsg,#pmsg{height:24px;margin:8px 0}
+#zboard{display:grid;gap:3px;width:min(92vw,360px);aspect-ratio:1;margin:12px auto;background:#312e81;padding:4px;border-radius:10px;box-sizing:border-box}
+.t{border-radius:4px;border:2px solid transparent;box-sizing:border-box}
+.t.s{border-color:#fff}
+#rubik{text-align:left;line-height:1.5}
+#rubik details{background:#312e81;border-radius:10px;margin:10px 0;padding:10px 14px}
+#rubik summary{font-weight:bold;cursor:pointer}
+#rubik code{background:#4338ca;padding:2px 6px;border-radius:4px;display:inline-block;margin:2px 0}
+.note{background:#4338ca;border-radius:10px;padding:10px 14px;margin:10px 0}
+canvas{width:min(94vw,360px);background:#000;border:2px solid #1d4ed8;border-radius:8px;touch-action:none}
+#pad{display:grid;grid-template-columns:repeat(3,64px);gap:6px;justify-content:center;margin:12px 0}
+#pad button{height:56px;font-size:24px;background:#1d4ed8;color:#fff;margin:0;padding:0}
+</style>
+</head>
+<body>
+
+<div id="menu" class="view on">
+<h1>🧠 Game Asah Otak</h1>
+<p style="opacity:.8">Pilih game yang mau dimainin</p>
+<div class="menu">
+<div class="card" onclick="show('v-block')"><div class="thumb"><img src="block.gif" alt="Block Blast" style="transform:translateY(-12%) scale(2.4);transform-origin:50% 75%"></div><b>Block Blast</b></div>
+<div class="card" onclick="show('v-puzzle')"><div class="thumb"><img src="puzzle.gif" alt="Puzzle"></div><b>Puzzle</b></div>
+<div class="card" onclick="show('v-rubik')"><div class="thumb"><img src="rubik.gif" alt="Rubik"></div><b>Cara Main Rubik</b></div>
+<div class="card" onclick="show('v-pac')"><div class="thumb"><img src="pacman.gif" alt="Pac-Man"></div><b>Pac-Man</b></div>
+</div>
+</div>
+
+<div id="v-block" class="view">
+<a class="back" onclick="show('menu')">← Menu</a>
+<h1>🧩 Block Blast</h1>
+<div id="info"><div>Skor: <b id="bscore">0</b></div><div>Terbaik: <b id="bbest">0</b></div></div>
+<div id="bboard"></div>
+<div id="bpieces"></div>
+<div id="bmsg"></div>
+<button onclick="Block.start()">Main Lagi</button>
+</div>
+
+<div id="v-puzzle" class="view">
+<a class="back" onclick="show('menu')">← Menu</a>
+<h1>🖼️ Puzzle</h1>
+<div>Langkah: <b id="zmv">0</b></div>
+<div id="zboard"></div>
+<div id="zmsg"></div>
+<button onclick="Puzzle.start(3)">3x3</button>
+<button onclick="Puzzle.start(4)">4x4</button>
+</div>
+
+<div id="v-rubik" class="view">
+<a class="back" onclick="show('menu')">← Menu</a>
+<h1>🎲 Cara Main Rubik 3x3</h1>
+<div id="rubik">
+<div class="note">
+<b>Notasi:</b> R = sisi kanan, L = kiri, U = atas, D = bawah, F = depan, B = belakang. Huruf polos = putar 90° searah jarum jam. Tanda ' (misal R') = berlawanan jarum jam. Angka 2 (misal U2) = putar 180°.
+</div>
+<details open>
+<summary>Langkah 1: Tanda plus putih</summary>
+<p>Bikin tanda "+" di sisi atas pakai kotak tengah putih. Pastiin warna samping tiap kotak putih itu sama dengan warna tengah sisi sampingnya. Langkah ini intuitif, jadi coba-coba aja: kalau kotak putih udah nyambung ke tengah yang bener, putar sisi itu 180° biar turun ke bawah, terus balik lagi ke atas pada pasangan berikutnya.</p>
+</details>
+<details>
+<summary>Langkah 2: Pojok putih (lapisan pertama)</summary>
+<p>Balik rubik, sisi putih ada di bawah. Cari kotak pojok yang ada warna putihnya, taruh di pojok kanan atas depan, tepat di atas lubang tujuannya. Terus ulangin rumus ini sampai pojoknya pas:</p>
+<code>R U R' U'</code>
+<p>Biasanya ngulang 1 sampai 5 kali. Lakuin buat 4 pojok putih. Jangan khawatir kalau pojok lain kelihatan berantakan sementara, nanti rapi lagi.</p>
+</details>
+<details>
+<summary>Langkah 3: Lapisan tengah</summary>
+<p>Sisi kuning di atas. Cari kotak pinggir di lapisan atas yang nggak ada kuningnya. Putar U sampai warna depannya sama dengan tengah sisi depan.</p>
+<p>Kalau harus pindah ke <b>kanan</b>:</p>
+<code>U R U' R' U' F' U F</code>
+<p>Kalau harus pindah ke <b>kiri</b>:</p>
+<code>U' L' U L U F U' F'</code>
+</details>
+<details>
+<summary>Langkah 4: Tanda plus kuning</summary>
+<p>Liat pola kuning di sisi atas. Kalau cuma titik, bentuk L, atau garis, pakai rumus ini (pegang garis horizontal, atau L di kiri belakang):</p>
+<code>F R U R' U' F'</code>
+<p>Ulangi sampai jadi tanda plus kuning.</p>
+</details>
+<details>
+<summary>Langkah 5: Cocokin pinggir kuning</summary>
+<p>Putar U sampai minimal 2 kotak pinggir cocok dengan tengah sisi sampingnya. Kalau dua yang cocok bersebelahan, taruh di belakang dan kanan, lalu:</p>
+<code>R U R' U R U2 R' U</code>
+<p>Ulangi sampai keempat pinggir cocok.</p>
+</details>
+<details>
+<summary>Langkah 6: Posisiin pojok kuning</summary>
+<p>Cari pojok yang udah di tempat yang benar (3 warnanya cocok dengan 3 sisi di sekitarnya, urutan nggak harus benar). Taruh di kanan atas depan, lalu:</p>
+<code>U R U' L' U R' U' L</code>
+<p>Ulangi sampai keempat pojok ada di tempat yang benar.</p>
+</details>
+<details>
+<summary>Langkah 7: Putar pojok terakhir</summary>
+<p>Pegang rubik dengan pojok yang belum bener di kanan atas depan. Ulangi rumus ini 2 atau 4 kali sampai kuningnya menghadap ke atas:</p>
+<code>R' D' R D</code>
+<p><b>Penting:</b> jangan puter seluruh rubik di langkah ini. Pas pojok pertama beres, putar cuma sisi atas (U) buat bawa pojok berikutnya ke kanan atas depan. Kelihatan berantakan di tengah proses, tapi di akhir bakal jadi semua. 🎉</p>
+</details>
+<div class="note">Tips: hafalin tiap rumus pelan-pelan, jangan dikebut. Setelah hafal, baru latihan makin cepet.</div>
+</div>
+</div>
+
+<div id="v-pac" class="view">
+<a class="back" onclick="show('menu')">← Menu</a>
+<h1>🟡 Pac-Man</h1>
+<div id="pinfo"><div>Skor: <b id="pscore">0</b></div><div>Nyawa: <b id="plives">3</b></div></div>
+<canvas id="cv"></canvas>
+<div id="pmsg"></div>
+<div id="pad">
+<i></i><button onclick="Pac.go(0,-1)">▲</button><i></i>
+<button onclick="Pac.go(-1,0)">◀</button><i></i><button onclick="Pac.go(1,0)">▶</button>
+<i></i><button onclick="Pac.go(0,1)">▼</button><i></i>
+</div>
+<button onclick="Pac.start()">Main Lagi</button>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  Pac.stop();
+  if (id === 'v-block') Block.start();
+  if (id === 'v-puzzle') Puzzle.start(3);
+  if (id === 'v-pac') Pac.start();
+  window.scrollTo(0, 0);
+}
+
+const Block = (function () {
+  const $ = id => document.getElementById(id);
+  const N = 8;
+  const SHAPES = [
+    [[1]], [[1,1]], [[1],[1]], [[1,1,1]], [[1],[1],[1]],
+    [[1,1],[1,1]], [[1,1,1],[1,1,1],[1,1,1]],
+    [[1,1,1,1]], [[1],[1],[1],[1]],
+    [[1,0],[1,0],[1,1]], [[1,1],[1,0]], [[0,1],[1,1]],
+    [[1,1,1],[0,1,0]], [[1,1,0],[0,1,1]], [[1,1,1],[1,0,0],[1,0,0]]
+  ];
+  let grid, pieces, sel, score, over;
+  let best = 0;
+  try { best = parseInt(localStorage.getItem('bp_best')) || 0; } catch (e) {}
+
+  function start() {
+    grid = Array.from({length: N}, () => Array(N).fill(0));
+    score = 0;
+    over = false;
+    newPieces();
+    sel = 0;
+    setMsg('');
+    render();
+  }
+  function newPieces() {
+    pieces = [0, 1, 2].map(() => SHAPES[Math.floor(Math.random() * SHAPES.length)]);
+  }
+  function fits(shape, r, c) {
+    for (let i = 0; i < shape.length; i++) {
+      for (let j = 0; j < shape[i].length; j++) {
+        if (!shape[i][j]) continue;
+        if (r + i >= N || c + j >= N) return false;
+        if (grid[r + i][c + j]) return false;
+      }
+    }
+    return true;
+  }
+  function canAny() {
+    for (const p of pieces) {
+      if (!p) continue;
+      for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+          if (fits(p, r, c)) return true;
+        }
+      }
+    }
+    return false;
+  }
+  function place(r, c) {
+    if (over || sel === null || !pieces[sel]) return;
+    const shape = pieces[sel];
+    if (!fits(shape, r, c)) { setMsg('Nggak muat di situ 😅'); return; }
+    setMsg('');
+    let count = 0;
+    shape.forEach((row, i) => row.forEach((v, j) => {
+      if (v) { grid[r + i][c + j] = 1; count++; }
+    }));
+    score += count;
+    pieces[sel] = null;
+    const rows = [], cols = [];
+    for (let i = 0; i < N; i++) {
+      if (grid[i].every(v => v === 1)) rows.push(i);
+      if (grid.every(row => row[i] === 1)) cols.push(i);
+    }
+    rows.forEach(i => { for (let j = 0; j < N; j++) grid[i][j] = 0; });
+    cols.forEach(j => { for (let i = 0; i < N; i++) grid[i][j] = 0; });
+    const lines = rows.length + cols.length;
+    if (lines > 0) {
+      score += lines * lines * 10;
+      setMsg(lines + ' garis ilang! 🔥');
+    }
+    if (pieces.every(p => p === null)) newPieces();
+    sel = pieces.findIndex(p => p !== null);
+    if (score > best) {
+      best = score;
+      try { localStorage.setItem('bp_best', best); } catch (e) {}
+    }
+    if (!canAny()) {
+      over = true;
+      setMsg('Game over! Skor lo: ' + score);
+    }
+    render();
+  }
+  function setMsg(t) { $('bmsg').textContent = t; }
+  function render() {
+    $('bscore').textContent = score;
+    $('bbest').textContent = best;
+    const board = $('bboard');
+    board.innerHTML = '';
+    for (let r = 0; r < N; r++) {
+      for (let c = 0; c < N; c++) {
+        const d = document.createElement('div');
+        d.className = 'c' + (grid[r][c] ? ' f' : '');
+        d.onclick = () => place(r, c);
+        board.appendChild(d);
+      }
+    }
+    const box = $('bpieces');
+    box.innerHTML = '';
+    pieces.forEach((p, i) => {
+      const w = document.createElement('div');
+      w.className = 'pc' + (i === sel ? ' sel' : '');
+      if (p) {
+        const g = document.createElement('div');
+        g.className = 'pg';
+        g.style.gridTemplateColumns = 'repeat(' + p[0].length + ', 16px)';
+        p.forEach(row => row.forEach(v => {
+          const x = document.createElement('div');
+          if (v) x.className = 'on';
+          g.appendChild(x);
+        }));
+        w.appendChild(g);
+        w.onclick = () => { sel = i; render(); };
+      }
+      box.appendChild(w);
+    });
+  }
+  return {start: start};
+})();
+
+const Puzzle = (function () {
+  const $ = id => document.getElementById(id);
+  let N = 3, order = [], sel = null, moves = 0, done = false;
+
+  function makeImg() {
+    const c = document.createElement('canvas');
+    c.width = 300; c.height = 300;
+    const x = c.getContext('2d');
+    const gr = x.createLinearGradient(0, 0, 300, 300);
+    gr.addColorStop(0, '#f59e0b');
+    gr.addColorStop(0.35, '#ef4444');
+    gr.addColorStop(0.7, '#8b5cf6');
+    gr.addColorStop(1, '#06b6d4');
+    x.fillStyle = gr;
+    x.fillRect(0, 0, 300, 300);
+    x.fillStyle = 'rgba(255,255,255,0.9)';
+    x.beginPath(); x.arc(80, 80, 45, 0, 7); x.fill();
+    x.fillStyle = 'rgba(0,0,0,0.55)';
+    x.fillRect(180, 40, 90, 90);
+    x.fillStyle = '#22c55e';
+    x.beginPath(); x.moveTo(30, 280); x.lineTo(110, 160); x.lineTo(190, 280); x.fill();
+    x.fillStyle = '#facc15';
+    x.beginPath(); x.arc(230, 220, 50, 0, 7); x.fill();
+    x.fillStyle = '#1e1b4b';
+    x.fillRect(140, 140, 20, 120);
+    x.fillRect(110, 190, 80, 18);
+    return c.toDataURL();
+  }
+  const IMG = makeImg();
+
+  function start(n) {
+    N = n || N;
+    order = Array.from({length: N * N}, (_, i) => i);
+    do {
+      for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+    } while (order.every((v, i) => v === i));
+    sel = null; moves = 0; done = false;
+    $('zmsg').textContent = '';
+    render();
+  }
+  function tap(p) {
+    if (done) return;
+    if (sel === null) { sel = p; }
+    else if (sel === p) { sel = null; }
+    else {
+      [order[sel], order[p]] = [order[p], order[sel]];
+      sel = null;
+      moves++;
+      if (order.every((v, i) => v === i)) {
+        done = true;
+        $('zmsg').textContent = 'Selesai! 🎉 ' + moves + ' langkah';
+      }
+    }
+    render();
+  }
+  function render() {
+    $('zmv').textContent = moves;
+    const b = $('zboard');
+    b.style.gridTemplateColumns = 'repeat(' + N + ', 1fr)';
+    b.innerHTML = '';
+    order.forEach((id, p) => {
+      const d = document.createElement('div');
+      d.className = 't' + (p === sel ? ' s' : '');
+      const cx = id % N, cy = Math.floor(id / N);
+      d.style.backgroundImage = 'url(' + IMG + ')';
+      d.style.backgroundSize = (N * 100) + '% ' + (N * 100) + '%';
+      d.style.backgroundPosition = (cx * 100 / (N - 1)) + '% ' + (cy * 100 / (N - 1)) + '%';
+      d.onclick = () => tap(p);
+      b.appendChild(d);
+    });
+  }
+  return {start: start};
+})();
+
+const Pac = (function () {
+  const $ = id => document.getElementById(id);
+  const MAP = [
+    "###############",
+    "#......#......#",
+    "#.##.#.#.#.##.#",
+    "#.............#",
+    "#.##.#####.##.#",
+    "#....#...#....#",
+    "####.#.#.#.####",
+    "#.............#",
+    "####.#.#.#.####",
+    "#....#...#....#",
+    "#.##.#####.##.#",
+    "#.............#",
+    "#.##.#.#.#.##.#",
+    "#......#......#",
+    "###############"
+  ];
+  const R = MAP.length, C = MAP[0].length, S = 24;
+  const cv = $('cv');
+  const ctx = cv.getContext('2d');
+  cv.width = C * S;
+  cv.height = R * S;
+
+  let g, pac, dir, nd, ghosts, score, lives, left, over, timer, n;
+
+  function start() {
+    g = MAP.map(r => r.split(''));
+    left = 0;
+    g.forEach(r => r.forEach(c => { if (c === '.') left++; }));
+    score = 0; lives = 3; over = false; n = 0;
+    resetPos();
+    setMsg('');
+    $('pscore').textContent = 0;
+    $('plives').textContent = 3;
+    clearInterval(timer);
+    timer = setInterval(tick, 170);
+    draw();
+  }
+  function stop() { clearInterval(timer); }
+  function resetPos() {
+    pac = {x: 7, y: 11};
+    dir = {x: 0, y: 0};
+    nd = {x: 0, y: 0};
+    ghosts = [
+      {x: 1, y: 7, d: {x: 1, y: 0}, c: '#ef4444'},
+      {x: 13, y: 7, d: {x: -1, y: 0}, c: '#f472b6'},
+      {x: 7, y: 7, d: {x: 1, y: 0}, c: '#22d3ee'}
+    ];
+  }
+  function free(x, y) {
+    return y >= 0 && y < R && x >= 0 && x < C && g[y][x] !== '#';
+  }
+  function go(dx, dy) { nd = {x: dx, y: dy}; }
+  function setMsg(t) { $('pmsg').textContent = t; }
+  function end(t) {
+    over = true;
+    clearInterval(timer);
+    setMsg(t);
+    draw();
+  }
+  function hit() {
+    if (ghosts.some(h => h.x === pac.x && h.y === pac.y)) {
+      lives--;
+      if (lives <= 0) {
+        $('plives').textContent = 0;
+        end('Game over! Skor lo: ' + score);
+      } else {
+        setMsg('Kena hantu! 👻');
+        resetPos();
+      }
+      return true;
+    }
+    return false;
+  }
+  function moveGhost(h) {
+    const dirs = [{x: 1, y: 0}, {x: -1, y: 0}, {x: 0, y: 1}, {x: 0, y: -1}];
+    let opts = dirs.filter(d => free(h.x + d.x, h.y + d.y) && !(d.x === -h.d.x && d.y === -h.d.y));
+    if (!opts.length) opts = dirs.filter(d => free(h.x + d.x, h.y + d.y));
+    let pick;
+    if (Math.random() < 0.5) {
+      const dist = d => Math.abs(h.x + d.x - pac.x) + Math.abs(h.y + d.y - pac.y);
+      opts.sort((a, b) => dist(a) - dist(b));
+      pick = opts[0];
+    } else {
+      pick = opts[Math.floor(Math.random() * opts.length)];
+    }
+    h.d = pick;
+    h.x += pick.x;
+    h.y += pick.y;
+  }
+  function tick() {
+    if (over) return;
+    n++;
+    if ((nd.x || nd.y) && free(pac.x + nd.x, pac.y + nd.y)) dir = nd;
+    if (free(pac.x + dir.x, pac.y + dir.y)) {
+      pac.x += dir.x;
+      pac.y += dir.y;
+    }
+    if (g[pac.y][pac.x] === '.') {
+      g[pac.y][pac.x] = ' ';
+      score += 10;
+      left--;
+    }
+    if (left === 0) {
+      $('pscore').textContent = score;
+      end('Menang! 🎉 Skor: ' + score);
+      return;
+    }
+    if (!hit()) {
+      if (n % 4 !== 0) {
+        ghosts.forEach(moveGhost);
+        hit();
+      }
+    }
+    $('pscore').textContent = score;
+    if (!over) $('plives').textContent = lives;
+    draw();
+  }
+  function draw() {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, cv.width, cv.height);
+    for (let y = 0; y < R; y++) {
+      for (let x = 0; x < C; x++) {
+        if (g[y][x] === '#') {
+          ctx.fillStyle = '#1d4ed8';
+          ctx.fillRect(x * S + 2, y * S + 2, S - 4, S - 4);
+        } else if (g[y][x] === '.') {
+          ctx.fillStyle = '#fde68a';
+          ctx.beginPath();
+          ctx.arc(x * S + S / 2, y * S + S / 2, 2.5, 0, 7);
+          ctx.fill();
+        }
+      }
+    }
+    const a = Math.atan2(dir.y, dir.x);
+    const m = (n % 2) ? 0.05 : 0.28;
+    const px = pac.x * S + S / 2, py = pac.y * S + S / 2;
+    ctx.fillStyle = '#facc15';
+    ctx.beginPath();
+    ctx.moveTo(px, py);
+    ctx.arc(px, py, S / 2 - 2, a + m * Math.PI, a - m * Math.PI + 2 * Math.PI);
+    ctx.closePath();
+    ctx.fill();
+    ghosts.forEach(h => {
+      const cx = h.x * S + S / 2, cy = h.y * S + S / 2;
+      ctx.fillStyle = h.c;
+      ctx.beginPath();
+      ctx.arc(cx, cy - 1, S / 2 - 3, Math.PI, 0);
+      ctx.lineTo(cx + S / 2 - 3, cy + S / 2 - 3);
+      ctx.lineTo(cx - S / 2 + 3, cy + S / 2 - 3);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(cx - 4, cy - 2, 3, 0, 7); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx + 4, cy - 2, 3, 0, 7); ctx.fill();
+      ctx.fillStyle = '#1e1b4b';
+      ctx.beginPath(); ctx.arc(cx - 4, cy - 2, 1.5, 0, 7); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx + 4, cy - 2, 1.5, 0, 7); ctx.fill();
+    });
+  }
+
+  document.addEventListener('keydown', e => {
+    if (!$('v-pac').classList.contains('on')) return;
+    const k = {ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0]}[e.key];
+    if (k) { e.preventDefault(); go(k[0], k[1]); }
+  });
+  let tx = 0, ty = 0;
+  cv.addEventListener('touchstart', e => {
+    tx = e.touches[0].clientX;
+    ty = e.touches[0].clientY;
+  }, {passive: true});
+  cv.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    const dy = e.changedTouches[0].clientY - ty;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 20) return;
+    if (Math.abs(dx) > Math.abs(dy)) go(dx > 0 ? 1 : -1, 0);
+    else go(0, dy > 0 ? 1 : -1);
+  }, {passive: true});
+
+  return {start: start, stop: stop, go: go};
+})();
+</script>
+</body>
+</html>
