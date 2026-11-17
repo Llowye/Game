@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Game Asah Otak Kecil Prabowo</title>
+<title>Game Asah Otak</title>
 <style>
 body{margin:0;background:#1e1b4b;color:#fff;font-family:sans-serif;text-align:center;padding:14px;max-width:520px;margin:0 auto}
 .view{display:none}
@@ -31,11 +31,27 @@ button{padding:10px 20px;border:0;border-radius:8px;background:#f59e0b;color:#00
 #zboard{display:grid;gap:3px;width:min(92vw,360px);aspect-ratio:1;margin:12px auto;background:#312e81;padding:4px;border-radius:10px;box-sizing:border-box}
 .t{border-radius:4px;border:2px solid transparent;box-sizing:border-box}
 .t.s{border-color:#fff}
-#rubik{text-align:left;line-height:1.5}
-#rubik details{background:#312e81;border-radius:10px;margin:10px 0;padding:10px 14px}
-#rubik summary{font-weight:bold;cursor:pointer}
-#rubik code{background:#4338ca;padding:2px 6px;border-radius:4px;display:inline-block;margin:2px 0}
-.note{background:#4338ca;border-radius:10px;padding:10px 14px;margin:10px 0}
+#zwin{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);z-index:10;align-items:center;justify-content:center}
+#zwin.on{display:flex}
+#zwin .box{background:#312e81;border:2px solid #f59e0b;border-radius:16px;padding:16px;width:min(84vw,320px);animation:pop .5s ease}
+#zsur{width:70%;aspect-ratio:1;object-fit:cover;object-position:center;border-radius:12px;background:#fef3c7;display:block;margin:0 auto 10px}
+#ztxt{font-size:18px;font-weight:bold;margin-bottom:10px}
+@keyframes pop{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+.cf{position:fixed;top:-40px;font-size:26px;z-index:11;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(115vh) rotate(540deg)}}
+#rhint{background:#312e81;border:2px solid #4338ca;border-radius:10px;padding:10px;margin:8px 0;min-height:64px;line-height:1.5}
+#rscene{width:min(92vw,300px);height:260px;margin:6px auto;perspective:800px;touch-action:none;position:relative;cursor:grab}
+#rcube{position:absolute;left:50%;top:50%;width:0;height:0;transform-style:preserve-3d;transition:transform .7s}
+#rcube.drag{transition:none}
+.cb{position:absolute;width:56px;height:56px;margin:-28px 0 0 -28px;transform-style:preserve-3d}
+.cb .f{position:absolute;left:0;top:0;width:56px;height:56px;background:#111;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.cb .s{position:absolute;left:3px;top:3px;right:3px;bottom:3px;border-radius:6px}
+#rpad{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin:10px 0}
+#rpad button{padding:8px 0;margin:0;font-size:20px;line-height:1.1}
+#rpad button small{display:block;font-size:9px}
+.hintb{outline:3px solid #fff;animation:pulse .6s infinite alternate}
+@keyframes pulse{to{transform:scale(1.12)}}
+.rrow{margin:6px 0;font-size:14px}
 canvas{width:min(94vw,360px);background:#000;border:2px solid #1d4ed8;border-radius:8px;touch-action:none}
 #pad{display:grid;grid-template-columns:repeat(3,64px);gap:6px;justify-content:center;margin:12px 0}
 #pad button{height:56px;font-size:24px;background:#1d4ed8;color:#fff;margin:0;padding:0}
@@ -49,7 +65,7 @@ canvas{width:min(94vw,360px);background:#000;border:2px solid #1d4ed8;border-rad
 <div class="menu">
 <div class="card" onclick="show('v-block')"><div class="thumb"><img src="block.gif" alt="Block Blast" style="transform:translateY(-12%) scale(2.4);transform-origin:50% 75%"></div><b>Block Blast</b></div>
 <div class="card" onclick="show('v-puzzle')"><div class="thumb"><img src="puzzle.gif" alt="Puzzle"></div><b>Puzzle</b></div>
-<div class="card" onclick="show('v-rubik')"><div class="thumb"><img src="rubik.gif" alt="Rubik"></div><b>Cara Main Rubik</b></div>
+<div class="card" onclick="show('v-rubik')"><div class="thumb"><img src="rubik.gif" alt="Rubik"></div><b>Rubik 3D</b></div>
 <div class="card" onclick="show('v-pac')"><div class="thumb"><img src="pacman.gif" alt="Pac-Man"></div><b>Pac-Man</b></div>
 </div>
 </div>
@@ -74,56 +90,29 @@ canvas{width:min(94vw,360px);background:#000;border:2px solid #1d4ed8;border-rad
 <button onclick="Puzzle.start(4)">4x4</button>
 </div>
 
+<div id="zwin">
+<div class="box">
+<img id="zsur" src="kejutan.png" alt="Kejutan">
+<div id="ztxt"></div>
+<button onclick="Puzzle.start()">Main Lagi</button>
+<button onclick="Puzzle.close()">Tutup</button>
+</div>
+</div>
+
 <div id="v-rubik" class="view">
 <a class="back" onclick="show('menu')">← Menu</a>
-<h1>🎲 Cara Main Rubik 3x3</h1>
-<div id="rubik">
-<div class="note">
-<b>Notasi:</b> R = sisi kanan, L = kiri, U = atas, D = bawah, F = depan, B = belakang. Huruf polos = putar 90° searah jarum jam. Tanda ' (misal R') = berlawanan jarum jam. Angka 2 (misal U2) = putar 180°.
-</div>
-<details open>
-<summary>Langkah 1: Tanda plus putih</summary>
-<p>Bikin tanda "+" di sisi atas pakai kotak tengah putih. Pastiin warna samping tiap kotak putih itu sama dengan warna tengah sisi sampingnya. Langkah ini intuitif, jadi coba-coba aja: kalau kotak putih udah nyambung ke tengah yang bener, putar sisi itu 180° biar turun ke bawah, terus balik lagi ke atas pada pasangan berikutnya.</p>
-</details>
-<details>
-<summary>Langkah 2: Pojok putih (lapisan pertama)</summary>
-<p>Balik rubik, sisi putih ada di bawah. Cari kotak pojok yang ada warna putihnya, taruh di pojok kanan atas depan, tepat di atas lubang tujuannya. Terus ulangin rumus ini sampai pojoknya pas:</p>
-<code>R U R' U'</code>
-<p>Biasanya ngulang 1 sampai 5 kali. Lakuin buat 4 pojok putih. Jangan khawatir kalau pojok lain kelihatan berantakan sementara, nanti rapi lagi.</p>
-</details>
-<details>
-<summary>Langkah 3: Lapisan tengah</summary>
-<p>Sisi kuning di atas. Cari kotak pinggir di lapisan atas yang nggak ada kuningnya. Putar U sampai warna depannya sama dengan tengah sisi depan.</p>
-<p>Kalau harus pindah ke <b>kanan</b>:</p>
-<code>U R U' R' U' F' U F</code>
-<p>Kalau harus pindah ke <b>kiri</b>:</p>
-<code>U' L' U L U F U' F'</code>
-</details>
-<details>
-<summary>Langkah 4: Tanda plus kuning</summary>
-<p>Liat pola kuning di sisi atas. Kalau cuma titik, bentuk L, atau garis, pakai rumus ini (pegang garis horizontal, atau L di kiri belakang):</p>
-<code>F R U R' U' F'</code>
-<p>Ulangi sampai jadi tanda plus kuning.</p>
-</details>
-<details>
-<summary>Langkah 5: Cocokin pinggir kuning</summary>
-<p>Putar U sampai minimal 2 kotak pinggir cocok dengan tengah sisi sampingnya. Kalau dua yang cocok bersebelahan, taruh di belakang dan kanan, lalu:</p>
-<code>R U R' U R U2 R' U</code>
-<p>Ulangi sampai keempat pinggir cocok.</p>
-</details>
-<details>
-<summary>Langkah 6: Posisiin pojok kuning</summary>
-<p>Cari pojok yang udah di tempat yang benar (3 warnanya cocok dengan 3 sisi di sekitarnya, urutan nggak harus benar). Taruh di kanan atas depan, lalu:</p>
-<code>U R U' L' U R' U' L</code>
-<p>Ulangi sampai keempat pojok ada di tempat yang benar.</p>
-</details>
-<details>
-<summary>Langkah 7: Putar pojok terakhir</summary>
-<p>Pegang rubik dengan pojok yang belum bener di kanan atas depan. Ulangi rumus ini 2 atau 4 kali sampai kuningnya menghadap ke atas:</p>
-<code>R' D' R D</code>
-<p><b>Penting:</b> jangan puter seluruh rubik di langkah ini. Pas pojok pertama beres, putar cuma sisi atas (U) buat bawa pojok berikutnya ke kanan atas depan. Kelihatan berantakan di tengah proses, tapi di akhir bakal jadi semua. 🎉</p>
-</details>
-<div class="note">Tips: hafalin tiap rumus pelan-pelan, jangan dikebut. Setelah hafal, baru latihan makin cepet.</div>
+<h1>🎲 Rubik 3D</h1>
+<div id="rhint"></div>
+<div id="rscene"><div id="rcube"></div></div>
+<div style="opacity:.7;font-size:13px">Geser layar buat muter tampilan</div>
+<div id="rpad"></div>
+<div class="rrow"><label><input type="checkbox" id="rauto" checked> Kamera ikut otomatis</label></div>
+<button id="rautob" onclick="Rubik.auto()">▶ Mainin otomatis</button>
+<div class="rrow">Acak baru:
+<button onclick="Rubik.fresh(3)">Gampang</button>
+<button onclick="Rubik.fresh(8)">Sedang</button>
+<button onclick="Rubik.fresh(15)">Susah</button>
+<button onclick="Rubik.fresh(0)">Reset</button>
 </div>
 </div>
 
@@ -145,11 +134,28 @@ canvas{width:min(94vw,360px);background:#000;border:2px solid #1d4ed8;border-rad
 function show(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
   document.getElementById(id).classList.add('on');
+  document.getElementById('zwin').classList.remove('on');
   Pac.stop();
+  Rubik.stopAuto();
   if (id === 'v-block') Block.start();
   if (id === 'v-puzzle') Puzzle.start(3);
+  if (id === 'v-rubik') Rubik.fresh(3);
   if (id === 'v-pac') Pac.start();
   window.scrollTo(0, 0);
+}
+
+function confetti() {
+  const em = ['🎉', '✨', '🎊', '⭐', '💛', '🧩'];
+  for (let i = 0; i < 36; i++) {
+    const s = document.createElement('span');
+    s.className = 'cf';
+    s.textContent = em[Math.floor(Math.random() * em.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.animationDuration = (2 + Math.random() * 2.5) + 's';
+    s.style.animationDelay = (Math.random() * 0.8) + 's';
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 5500);
+  }
 }
 
 const Block = (function () {
@@ -273,7 +279,15 @@ const Block = (function () {
 
 const Puzzle = (function () {
   const $ = id => document.getElementById(id);
-  let N = 3, order = [], sel = null, moves = 0, done = false;
+  const PHOTOS = ['foto1.jpg','foto2.jpg','foto3.jpg','foto4.jpg','foto5.jpg','foto6.jpg','foto7.jpg','foto8.jpg'];
+  const MSGS = [
+    'Wih pinter! Nenek aja kalah 😤',
+    'Cie jago puzzle 😏',
+    'Otak lo encer banget! 🧠',
+    'Hmph... lumayan lah 🙄',
+    'Nenek terkesan, tapi nggak mau ngaku 😒'
+  ];
+  let N = 3, order = [], sel = null, moves = 0, done = false, last = -1, IMG = '';
 
   function makeImg() {
     const c = document.createElement('canvas');
@@ -288,21 +302,38 @@ const Puzzle = (function () {
     x.fillRect(0, 0, 300, 300);
     x.fillStyle = 'rgba(255,255,255,0.9)';
     x.beginPath(); x.arc(80, 80, 45, 0, 7); x.fill();
-    x.fillStyle = 'rgba(0,0,0,0.55)';
-    x.fillRect(180, 40, 90, 90);
     x.fillStyle = '#22c55e';
     x.beginPath(); x.moveTo(30, 280); x.lineTo(110, 160); x.lineTo(190, 280); x.fill();
     x.fillStyle = '#facc15';
     x.beginPath(); x.arc(230, 220, 50, 0, 7); x.fill();
-    x.fillStyle = '#1e1b4b';
-    x.fillRect(140, 140, 20, 120);
-    x.fillRect(110, 190, 80, 18);
     return c.toDataURL();
   }
-  const IMG = makeImg();
+
+  function pickPhoto(cb) {
+    let i;
+    do { i = Math.floor(Math.random() * PHOTOS.length); } while (i === last && PHOTOS.length > 1);
+    last = i;
+    const im = new Image();
+    im.onload = function () {
+      try {
+        const s = Math.min(im.width, im.height);
+        const c = document.createElement('canvas');
+        c.width = 600; c.height = 600;
+        const x = c.getContext('2d');
+        const sx = (im.width - s) / 2;
+        const sy = (im.height - s) * 0.15;
+        x.drawImage(im, sx, sy, s, s, 0, 0, 600, 600);
+        IMG = c.toDataURL('image/jpeg', 0.85);
+      } catch (e) { IMG = makeImg(); }
+      cb();
+    };
+    im.onerror = function () { IMG = makeImg(); cb(); };
+    im.src = PHOTOS[i];
+  }
 
   function start(n) {
     N = n || N;
+    $('zwin').classList.remove('on');
     order = Array.from({length: N * N}, (_, i) => i);
     do {
       for (let i = order.length - 1; i > 0; i--) {
@@ -312,8 +343,21 @@ const Puzzle = (function () {
     } while (order.every((v, i) => v === i));
     sel = null; moves = 0; done = false;
     $('zmsg').textContent = '';
-    render();
+    pickPhoto(render);
   }
+
+  function close() { $('zwin').classList.remove('on'); }
+
+  function win() {
+    done = true;
+    $('zmsg').textContent = 'Selesai! 🎉 ' + moves + ' langkah';
+    setTimeout(function () {
+      $('ztxt').textContent = MSGS[Math.floor(Math.random() * MSGS.length)];
+      $('zwin').classList.add('on');
+      confetti();
+    }, 700);
+  }
+
   function tap(p) {
     if (done) return;
     if (sel === null) { sel = p; }
@@ -322,13 +366,11 @@ const Puzzle = (function () {
       [order[sel], order[p]] = [order[p], order[sel]];
       sel = null;
       moves++;
-      if (order.every((v, i) => v === i)) {
-        done = true;
-        $('zmsg').textContent = 'Selesai! 🎉 ' + moves + ' langkah';
-      }
+      if (order.every((v, i) => v === i)) win();
     }
     render();
   }
+
   function render() {
     $('zmv').textContent = moves;
     const b = $('zboard');
@@ -345,7 +387,269 @@ const Puzzle = (function () {
       b.appendChild(d);
     });
   }
-  return {start: start};
+  return {start: start, close: close};
+})();
+
+const Rubik = (function () {
+  const $ = id => document.getElementById(id);
+  const S = 56;
+  const FACES = {
+    U: {n: [0, -1, 0], name: 'PUTIH', col: '#f8fafc', txt: '#000'},
+    D: {n: [0, 1, 0], name: 'KUNING', col: '#facc15', txt: '#000'},
+    F: {n: [0, 0, 1], name: 'HIJAU', col: '#16a34a', txt: '#fff'},
+    B: {n: [0, 0, -1], name: 'BIRU', col: '#2563eb', txt: '#fff'},
+    R: {n: [1, 0, 0], name: 'MERAH', col: '#dc2626', txt: '#fff'},
+    L: {n: [-1, 0, 0], name: 'ORANYE', col: '#f97316', txt: '#000'}
+  };
+  const KEYS = ['U', 'D', 'F', 'B', 'R', 'L'];
+  const FT = {
+    F: 'translateZ(28px)',
+    B: 'rotateY(180deg) translateZ(28px)',
+    R: 'rotateY(90deg) translateZ(28px)',
+    L: 'rotateY(-90deg) translateZ(28px)',
+    U: 'rotateX(90deg) translateZ(28px)',
+    D: 'rotateX(-90deg) translateZ(28px)'
+  };
+  const VIEW = {U: [-65, -30], D: [65, -30], F: [-25, -30], B: [-25, 150], R: [-25, -60], L: [-25, 60]};
+
+  let cubies = [], stack = [], busy = false, scrambled = false, autoOn = false;
+  let cam = VIEW.F.slice();
+
+  function buildPad() {
+    const pad = $('rpad');
+    pad.innerHTML = '';
+    [1, -1].forEach(d => {
+      KEYS.forEach(k => {
+        const f = FACES[k];
+        const b = document.createElement('button');
+        b.setAttribute('data-m', k + (d > 0 ? '' : "'"));
+        b.style.background = f.col;
+        b.style.color = f.txt;
+        b.innerHTML = '<small>' + f.name + '</small>' + (d > 0 ? '↻' : '↺');
+        b.onclick = () => { stopAuto(); play({f: k, d: d}); };
+        pad.appendChild(b);
+      });
+    });
+  }
+
+  function build() {
+    const cube = $('rcube');
+    cube.innerHTML = '';
+    cubies = [];
+    for (let x = -1; x <= 1; x++) {
+      for (let y = -1; y <= 1; y++) {
+        for (let z = -1; z <= 1; z++) {
+          const el = document.createElement('div');
+          el.className = 'cb';
+          KEYS.forEach(k => {
+            const n = FACES[k].n;
+            const f = document.createElement('div');
+            f.className = 'f';
+            f.style.transform = FT[k];
+            if (x * n[0] + y * n[1] + z * n[2] === 1) {
+              const s = document.createElement('div');
+              s.className = 's';
+              s.style.background = FACES[k].col;
+              f.appendChild(s);
+            }
+            el.appendChild(f);
+          });
+          const c = {pos: [x, y, z], O: [[1, 0, 0], [0, 1, 0], [0, 0, 1]], el: el};
+          cubies.push(c);
+          cube.appendChild(el);
+          draw(c, 0, null);
+        }
+      }
+    }
+  }
+
+  function mat(c) {
+    const O = c.O, p = c.pos;
+    return 'matrix3d(' + [
+      O[0][0], O[1][0], O[2][0], 0,
+      O[0][1], O[1][1], O[2][1], 0,
+      O[0][2], O[1][2], O[2][2], 0,
+      p[0] * S, p[1] * S, p[2] * S, 1
+    ].join(',') + ')';
+  }
+
+  function draw(c, ang, n) {
+    c.el.style.transform = (ang ? 'rotate3d(' + n.join(',') + ',' + ang + 'deg) ' : '') + mat(c);
+  }
+
+  function rotM(n, s) {
+    const x = n[0], y = n[1], z = n[2];
+    const K = [[0, -z, y], [z, 0, -x], [-y, x, 0]];
+    return [0, 1, 2].map(i => [0, 1, 2].map(j => s * K[i][j] + n[i] * n[j]));
+  }
+  function mulV(R, v) {
+    return [0, 1, 2].map(i => R[i][0] * v[0] + R[i][1] * v[1] + R[i][2] * v[2]);
+  }
+  function mulM(A, B) {
+    return [0, 1, 2].map(i => [0, 1, 2].map(j => A[i][0] * B[0][j] + A[i][1] * B[1][j] + A[i][2] * B[2][j]));
+  }
+
+  function turn(m, ms, cb) {
+    busy = true;
+    const n = FACES[m.f].n;
+    const layer = cubies.filter(c => c.pos[0] * n[0] + c.pos[1] * n[1] + c.pos[2] * n[2] === 1);
+    const t0 = performance.now();
+    function step(t) {
+      const k = Math.min(1, (t - t0) / ms);
+      const ang = m.d * 90 * k;
+      layer.forEach(c => draw(c, ang, n));
+      if (k < 1) {
+        requestAnimationFrame(step);
+      } else {
+        const R = rotM(n, m.d);
+        layer.forEach(c => {
+          c.pos = mulV(R, c.pos);
+          c.O = mulM(R, c.O);
+          draw(c, 0, null);
+        });
+        busy = false;
+        if (cb) cb();
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function record(m) {
+    const l = stack.length;
+    const top = stack[l - 1];
+    if (top && top.f === m.f && top.d === -m.d) { stack.pop(); return; }
+    if (l >= 2 && stack[l - 1].f === m.f && stack[l - 1].d === m.d && stack[l - 2].f === m.f && stack[l - 2].d === m.d) {
+      stack.pop();
+      stack.pop();
+      stack.push({f: m.f, d: -m.d});
+      return;
+    }
+    stack.push({f: m.f, d: m.d});
+  }
+
+  function play(m) {
+    if (busy) return;
+    turn(m, 280, () => { record(m); update(); });
+  }
+
+  function applyCam() {
+    $('rcube').style.transform = 'rotateX(' + cam[0] + 'deg) rotateY(' + cam[1] + 'deg)';
+  }
+
+function update() {
+    const h = $('rhint');
+    document.querySelectorAll('#rpad button').forEach(b => b.classList.remove('hintb'));
+    if (!stack.length) {
+      if (scrambled) {
+        h.innerHTML = '<b>Beres! 🎉</b><br>Rubik lo udah rapi lagi. Pencet "Acak baru" buat main lagi.';
+        scrambled = false;
+        confetti();
+      } else {
+        h.innerHTML = 'Rubik udah rapi. Pencet "Acak baru" buat mulai.';
+      }
+      return;
+    }
+    const top = stack[stack.length - 1];
+    const hm = {f: top.f, d: -top.d};
+    const F = FACES[hm.f];
+    h.innerHTML = 'Sisa <b>' + stack.length + '</b> langkah<br>' +
+      'Putar sisi <b style="color:' + F.col + '">' + F.name + '</b> ' +
+      (hm.d > 0 ? '↻ <b>searah</b>' : '↺ <b>berlawanan</b>') + ' jarum jam<br>' +
+      '<small>(dilihat dari sisi ' + F.name.toLowerCase() + ' itu)</small>';
+    const btn = document.querySelector('#rpad [data-m="' + hm.f + (hm.d > 0 ? '' : "'") + '"]');
+    if (btn) btn.classList.add('hintb');
+    if ($('rauto').checked) {
+      cam = VIEW[hm.f].slice();
+      applyCam();
+    }
+     }
+
+               function scramble(n) {
+    const seq = [];
+    let last = null;
+    for (let i = 0; i < n; i++) {
+      let f;
+      do { f = KEYS[Math.floor(Math.random() * KEYS.length)]; } while (f === last);
+      last = f;
+      seq.push({f: f, d: Math.random() < 0.5 ? 1 : -1});
+    }
+    scrambled = n > 0;
+    let i = 0;
+    (function next() {
+      if (i >= seq.length) {
+        if (!stack.length && seq.length) { scramble(n); return; }
+        update();
+        return;
+      }
+      const m = seq[i++];
+      turn(m, 140, () => { record(m); next(); });
+    })();
+  }
+
+  function fresh(n) {
+    stopAuto();
+    if (busy) return;
+    build();
+    stack = [];
+    cam = VIEW.F.slice();
+    applyCam();
+    $('rhint').innerHTML = 'Lagi ngacak...';
+    scramble(n);
+  }
+
+               function auto() {
+    if (autoOn) { stopAuto(); return; }
+    if (!stack.length) return;
+    autoOn = true;
+    $('rautob').textContent = '⏹ Stop';
+    (function loop() {
+      if (!autoOn) return;
+      if (!stack.length) { stopAuto(); return; }
+      if (busy) { setTimeout(loop, 100); return; }
+      const t = stack[stack.length - 1];
+      const m = {f: t.f, d: -t.d};
+      turn(m, 500, () => { record(m); update(); setTimeout(loop, 700); });
+    })();
+  }
+
+  function stopAuto() {
+    autoOn = false;
+    const b = $('rautob');
+    if (b) b.textContent = '▶ Mainin otomatis';
+  }
+
+                (function setupDrag() {
+    const sc = $('rscene');
+    let drag = false, lx = 0, ly = 0;
+    sc.addEventListener('pointerdown', e => {
+      drag = true;
+      lx = e.clientX;
+      ly = e.clientY;
+      $('rcube').classList.add('drag');
+      try { sc.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+    sc.addEventListener('pointermove', e => {
+      if (!drag) return;
+      cam[1] += (e.clientX - lx) * 0.6;
+      cam[0] -= (e.clientY - ly) * 0.6;
+      cam[0] = Math.max(-85, Math.min(85, cam[0]));
+      lx = e.clientX;
+      ly = e.clientY;
+      applyCam();
+    });
+    function end() {
+      drag = false;
+      $('rcube').classList.remove('drag');
+    }
+    sc.addEventListener('pointerup', end);
+    sc.addEventListener('pointercancel', end);
+  })();
+
+                 buildPad();
+  build();
+  applyCam();
+
+  return {fresh: fresh, auto: auto, stopAuto: stopAuto};
 })();
 
 const Pac = (function () {
@@ -399,6 +703,7 @@ const Pac = (function () {
       {x: 7, y: 7, d: {x: 1, y: 0}, c: '#22d3ee'}
     ];
   }
+
   function free(x, y) {
     return y >= 0 && y < R && x >= 0 && x < C && g[y][x] !== '#';
   }
@@ -462,8 +767,8 @@ const Pac = (function () {
       if (n % 4 !== 0) {
         ghosts.forEach(moveGhost);
         hit();
+        }
       }
-    }
     $('pscore').textContent = score;
     if (!over) $('plives').textContent = lives;
     draw();
@@ -510,8 +815,7 @@ const Pac = (function () {
       ctx.beginPath(); ctx.arc(cx + 4, cy - 2, 1.5, 0, 7); ctx.fill();
     });
   }
-
-  document.addEventListener('keydown', e => {
+document.addEventListener('keydown', e => {
     if (!$('v-pac').classList.contains('on')) return;
     const k = {ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0]}[e.key];
     if (k) { e.preventDefault(); go(k[0], k[1]); }
@@ -534,3 +838,6 @@ const Pac = (function () {
 </script>
 </body>
 </html>
+  
+      
+             
